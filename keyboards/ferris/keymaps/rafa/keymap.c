@@ -16,18 +16,27 @@
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_A:
+        case KC_SCLN:
             return TAPPING_TERM + 100;
         case KC_F:
         case KC_J:
         case KC_C:
         case KC_V:
         case KC_I:
-            return TAPPING_TERM - 100;
+            return TAPPING_TERM - 50; //Original was 100
         default:
             return TAPPING_TERM;
     }
 }
 #endif
+
+// Custom keycodes for the actions on Layer 8
+enum custom_keycodes {
+    FIRST_VD = SAFE_RANGE,
+    SECOND_VD,
+    THIRD_VD,
+    FOURTH_VD
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_split_3x5_2(
@@ -36,7 +45,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
      MT(MOD_LGUI, KC_A),    MT(MOD_LCTL, KC_S),    MT(MOD_LALT, KC_D),    MT(MOD_LSFT, KC_F),    KC_G,            KC_H,    MT(MOD_RSFT, KC_J),    MT(MOD_RALT, KC_K),    MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN),
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-     MT(MOD_LSFT, KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, MT(MOD_LSFT, KC_SLSH),
+     MT(MOD_LSFT, KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, MT(MOD_RSFT, KC_SLSH),
   //|----+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           LT(2, KC_TAB),  LT(4, KC_ENT),     LT(3, KC_SPC),   LT(1, KC_BSPC)
                                       //`--------------------------'  `--------------------------'
@@ -72,11 +81,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // symbols
     [3] = LAYOUT_split_3x5_2(
   //,--------------------------------------------.                    ,---------------------------------------------
-      KC_LCBR, KC_AMPR, KC_ASTR, KC_LPRN, KC_RCBR,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
+      KC_LCBR, KC_AMPR, KC_ASTR, KC_LPRN, KC_RCBR,                      XXXXXXX, KC_LCBR, KC_RCBR, XXXXXXX, QK_BOOT,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       KC_DQT, KC_DLR, KC_PERC, KC_CIRC, KC_PLUS,                      XXXXXXX, KC_LPRN, KC_RPRN, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_PIPE,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+      KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_PIPE,                      XXXXXXX, KC_LBRC, KC_RBRC, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                           KC_RPRN,  KC_UNDS,     KC_SPC, _______
                                       //`--------------------------'  `--------------------------'
@@ -132,5 +141,64 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                           _______,  KC_ENT,     KC_SPC, _______
                                       //`--------------------------'  `--------------------------'
+  ),
+
+// extra 
+    [8] = LAYOUT_split_3x5_2(
+  //,--------------------------------------------.                    ,---------------------------------------------.
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_VD, SECOND_VD, XXXXXXX, XXXXXXX,
+  //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_VD, FOURTH_VD, XXXXXXX, XXXXXXX,
+  //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+  //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
+                                          _______,  KC_ENT,     KC_SPC, _______
+                                      //`--------------------------'  `--------------------------'
   )
 };
+
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!record->event.pressed) {
+        return true; // Skip all release events
+    }
+    switch (keycode) {
+        case FIRST_VD:
+            // Press Win + Ctrl + Up + Left
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_UP);
+            tap_code(KC_LEFT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
+        case SECOND_VD:
+            // Press Win + Ctrl + Up + Right
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_UP);
+            tap_code(KC_RGHT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
+        case THIRD_VD:
+            // Press Win + Ctrl + Down + Left
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_DOWN);
+            tap_code(KC_LEFT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
+        case FOURTH_VD:
+            // Press Win + Ctrl + Down + Right
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_DOWN);
+            tap_code(KC_RGHT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
+    }
+    return true;
+}
