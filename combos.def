@@ -1,5 +1,5 @@
-COMB(esc_combo,                 LT(6, KC_ESC),     LT(2, KC_TAB),  LT(4, KC_ENT))
-COMB(delete_combo,              LT(5, KC_DEL),     LT(3, KC_SPC),   LT(1, KC_BSPC))
+COMB(esc_combo,                 LT(6, KC_ESC),     LT(2, KC_TAB),  LT(5, KC_ENT))
+COMB(enter_combo,               KC_ENT,     LT(3, KC_SPC),   LT(1, KC_BSPC))
 COMB(esc_combo_jk,                     KC_ESC,     MT(MOD_RSFT, KC_J), MT(MOD_RALT, KC_K))
 COMB(right_hyper_combo,               KC_HYPR,     MT(MOD_RSFT, KC_J),    MT(MOD_RALT, KC_K),    MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN))
-COMB(layer_activate_we,                 MO(8),              KC_W,           KC_E)
+COMB(layer_activate_extra,                 MO(8),              KC_W,           KC_E, KC_R)
