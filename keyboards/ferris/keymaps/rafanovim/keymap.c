@@ -192,14 +192,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     bool custom_keypress = false;
-    switch (kescode) {
+    switch (keycode) {
         case WORD_FWD:
         case WORD_BK:
             custom_keypress = true;
             break;
     }
 
-    if (!record->event.pressed) {
+    if (!record->event.pressed && !custom_keypress) {
         return true; // Skip all release events
     }
     switch (keycode) {
@@ -241,15 +241,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case WORD_BK:
             // Press Ctrl + Left
-            register_code(KC_LCTL);
-            tap_code(KC_LEFT);
-            unregister_code(KC_LCTL);
+            // Doing it this way as if I hold it I want it to continue happenin
+            if (record->event.pressed) {
+                register_code(KC_LCTL);
+                register_code(KC_LEFT);
+            } else {
+                unregister_code(KC_LEFT);
+                unregister_code(KC_LCTL);
+            }
             break;
         case WORD_FWD:
             // Press Ctrl + Left
-            register_code(KC_LCTL);
-            tap_code(KC_RIGHT);
-            unregister_code(KC_LCTL);
+            // Doing it this way as if I hold it I want it to continue happenin
+            if (record->event.pressed) {
+                register_code(KC_LCTL);
+                register_code(KC_RIGHT);
+            } else {
+                unregister_code(KC_RIGHT);
+                unregister_code(KC_LCTL);
+            }  
             break; 
         case C_BACK:
             // Press Ctrl + -
