@@ -54,7 +54,8 @@ enum custom_keycodes {
     C_GOIMP,
     C_GOREF,
     C_BACK,
-    C_FORWARD
+    C_FORWARD,
+    TG_NAV
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -91,9 +92,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     KC_PGDN, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  KC_PGDN,  KC_PGUP, XXXXXXX, XXXXXXX,
+      KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  KC_PGDN,  KC_PGUP, XXXXXXX, KC_RSFT,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                          XXXXXXX,  XXXXXXX,     KC_SPC, KC_DEL
+                                           TG_NAV,  TG_NAV,     TG_NAV, KC_DEL
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -189,12 +190,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
+    static bool navlayer_locked = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     bool custom_keypress = false;
     switch (keycode) {
         case WORD_FWD:
         case WORD_BK:
+        case TG_NAV:
+        case LT(2, KC_TAB): //Used on the locking nav
             custom_keypress = true;
             break;
     }
@@ -203,6 +207,54 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return true; // Skip all release events
     }
     switch (keycode) {
+        //Leaving more complex stuff at the top
+        
+        // Locking navigation layer
+        case TG_NAV:
+            if (record->event.pressed) {
+                navlayer_locked = !navlayer_locked;
+                if (navlayer_locked) {
+                    layer_on(2);
+                } else {
+                    layer_off(2);
+                }
+            }
+            return false;
+        case LT(2, KC_TAB):
+            if (record->event.pressed) {
+                if (!navlayer_locked) {
+                    layer_on(2);
+                }
+            } else {
+                if (!navlayer_locked) {
+                    layer_off(2);
+                }
+            }
+            return false;
+        // ^ Locking layer2
+
+        case WORD_BK:
+            // Press Ctrl + Left
+            // Doing it this way as if I hold it I want it to continue happenin
+            if (record->event.pressed) {
+                register_code(KC_LCTL);
+                register_code(KC_LEFT);
+            } else {
+                unregister_code(KC_LEFT);
+                unregister_code(KC_LCTL);
+            }
+            break;
+        case WORD_FWD:
+            // Press Ctrl + Left
+            // Doing it this way as if I hold it I want it to continue happenin
+            if (record->event.pressed) {
+                register_code(KC_LCTL);
+                register_code(KC_RIGHT);
+            } else {
+                unregister_code(KC_RIGHT);
+                unregister_code(KC_LCTL);
+            }  
+            break; 
         case FIRST_VD:
             // Press Win + Ctrl + Up + Left
             register_code(KC_LWIN);
@@ -239,28 +291,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LCTL);
             unregister_code(KC_LWIN);
             break;
-        case WORD_BK:
-            // Press Ctrl + Left
-            // Doing it this way as if I hold it I want it to continue happenin
-            if (record->event.pressed) {
-                register_code(KC_LCTL);
-                register_code(KC_LEFT);
-            } else {
-                unregister_code(KC_LEFT);
-                unregister_code(KC_LCTL);
-            }
-            break;
-        case WORD_FWD:
-            // Press Ctrl + Left
-            // Doing it this way as if I hold it I want it to continue happenin
-            if (record->event.pressed) {
-                register_code(KC_LCTL);
-                register_code(KC_RIGHT);
-            } else {
-                unregister_code(KC_RIGHT);
-                unregister_code(KC_LCTL);
-            }  
-            break; 
         case C_BACK:
             // Press Ctrl + -
             register_code(KC_LCTL);
@@ -288,7 +318,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             register_code(KC_LSFT);
             tap_code(KC_F12);
             unregister_code(KC_LSFT);
-            break; 
+            break;
     }
     return true;
 }
