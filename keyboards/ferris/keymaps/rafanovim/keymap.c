@@ -226,7 +226,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     layer_on(2);
                 }
             } else {
-                if (!navlayer_locked) {
+                if (!navlayer_locked && layer_state_is(2)) {
                     layer_off(2);
                 }
             
