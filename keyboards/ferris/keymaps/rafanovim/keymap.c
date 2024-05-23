@@ -47,7 +47,14 @@ enum custom_keycodes {
     FIRST_VD = SAFE_RANGE,
     SECOND_VD,
     THIRD_VD,
-    FOURTH_VD
+    FOURTH_VD,
+    WORD_BK,
+    WORD_FWD,
+    C_GODEF,
+    C_GOIMP,
+    C_GOREF,
+    C_BACK,
+    C_FORWARD
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -55,7 +62,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,----------------------------------------.                    ,-----------------------------------------------------.
      KC_Q,    KC_W,    LT(8, KC_E),    KC_R,    KC_T,                         KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-     MT(MOD_LGUI, KC_A),    MT(MOD_LCTL, KC_S),    MT(MOD_LALT, KC_D),    MT(MOD_LSFT, KC_F),    KC_G,            KC_H,    MT(MOD_RSFT, KC_J),    MT(MOD_RALT, KC_K),    MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN),
+     MT(MOD_LGUI, KC_A),    MT(MOD_LCTL, KC_S),    MT(MOD_LALT, KC_D),    MT(MOD_LSFT, KC_F),    LT(9, KC_G),            KC_H,    MT(MOD_RSFT, KC_J),    MT(MOD_RALT, KC_K),    MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN),
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
      MT(MOD_LSFT, KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, MT(MOD_RSFT, KC_SLSH),
   //|----+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -79,12 +86,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // navigation
     [2] = LAYOUT_split_3x5_2(
-  //,---------------------------------------------.                    ,-----------------------------------------------------.
-      KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX,
+  //,---------------------------------------------.                   ,-----------------------------------------------------.
+      XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       KC_PGUP, KC_HOME,   KC_UP,  KC_END, KC_PGUP,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LGUI, KC_LCTL,    KC_LALT,    KC_LSFT, KC_MINUS,                KC_LEFT,  KC_DOWN,  KC_UP,   KC_RIGHT, KC_RIGHT,
+      KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     KC_PGDN, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_HOME,  KC_PGDN,  KC_PGUP, KC_END, KC_END,
+      KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  KC_PGDN,  KC_PGUP, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           XXXXXXX,  XXXXXXX,     KC_SPC, KC_DEL
                                       //`--------------------------'  `--------------------------'
@@ -166,11 +173,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                           QK_BOOT,  KC_ENT,     KC_SPC, _______
                                       //`--------------------------'  `--------------------------'
-  )
+  ),
+
+// coding
+    [9] = LAYOUT_split_3x5_2(
+    //,--------------------------------------------.                    ,---------------------------------------------.
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, C_GODEF, C_GOIMP, C_GOREF, XXXXXXX,
+    //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  C_BACK, XXXXXXX,C_FORWARD, XXXXXXX,
+    //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
+                                            XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX
+                                        //`--------------------------'  `--------------------------'
+    )
 };
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    bool custom_keypress = false;
+    switch (kescode) {
+        case WORD_FWD:
+        case WORD_BK:
+            custom_keypress = true;
+            break;
+    }
+
     if (!record->event.pressed) {
         return true; // Skip all release events
     }
@@ -211,6 +239,46 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LCTL);
             unregister_code(KC_LWIN);
             break;
+        case WORD_BK:
+            // Press Ctrl + Left
+            register_code(KC_LCTL);
+            tap_code(KC_LEFT);
+            unregister_code(KC_LCTL);
+            break;
+        case WORD_FWD:
+            // Press Ctrl + Left
+            register_code(KC_LCTL);
+            tap_code(KC_RIGHT);
+            unregister_code(KC_LCTL);
+            break; 
+        case C_BACK:
+            // Press Ctrl + -
+            register_code(KC_LCTL);
+            tap_code(KC_MINUS);
+            unregister_code(KC_LCTL);
+            break;
+        case C_FORWARD:
+            // Press Ctrl + =
+            register_code(KC_LCTL);
+            tap_code(KC_EQL);
+            unregister_code(KC_LCTL);
+            break; 
+        case C_GODEF:
+            // Press F12
+            tap_code(KC_F12);
+            break; 
+        case C_GOIMP:
+            // Press Ctrl + F12
+            register_code(KC_LCTL);
+            tap_code(KC_F12);
+            unregister_code(KC_LCTL);
+            break; 
+        case C_GOREF:
+            // Press Shift + F12
+            register_code(KC_LSFT);
+            tap_code(KC_F12);
+            unregister_code(KC_LSFT);
+            break; 
     }
     return true;
 }

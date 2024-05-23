@@ -16,19 +16,28 @@
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_A:
-        case KC_I:
         case KC_SCLN:
-            return TAPPING_TERM + 100;
-        case KC_F:
-        case KC_J:
-        case KC_C:
-        case KC_V:
-            return TAPPING_TERM - 100;
+            return TAPPING_TERM + 50;
         case KC_Z:
         case KC_SLSH:
             return TAPPING_TERM - 175;
         default:
             return TAPPING_TERM;
+    }
+}
+#endif
+
+#ifdef PERMISSIVE_HOLD_PER_KEY
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        // Make shift great again
+        case MT(MOD_LSFT, KC_Z):
+        case MT(MOD_LSFT, KC_F):
+        case MT(MOD_RSFT, KC_J):
+        case MT(MOD_RSFT, KC_SLSH):
+            return true;
+        default:
+            return false;
     }
 }
 #endif
