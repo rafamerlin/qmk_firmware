@@ -229,6 +229,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (!navlayer_locked) {
                     layer_off(2);
                 }
+            
+                //We need to check if it was tapped and send the tab manually as LT kind of breaks with these changes
+                if (record->tap.count != 0) {
+                    tap_code(KC_TAB);
+                }
             }
             return false;
         // ^ Locking layer2
