@@ -1,4 +1,4 @@
-MOUSEKEY_ENABLE 				= no     # Mouse keys
+MOUSEKEY_ENABLE 				= no    # Mouse keys
 VIA_ENABLE      				= no    # Enable VIA
 LTO_ENABLE      				= yes
 COMMAND_ENABLE 					= no    # may be required for capsword
