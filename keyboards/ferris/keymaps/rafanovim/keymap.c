@@ -16,6 +16,7 @@
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_A:
+        case KC_I:
         case KC_SCLN:
             return TAPPING_TERM + 50;
         case KC_Z:
@@ -75,11 +76,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // numbers
     [1] = LAYOUT_split_3x5_2(
   //,------------------------------------------.                    ,-----------------------------------------------------.
-      KC_LBRC,    KC_7,    KC_8,    KC_9,    KC_RBRC,                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
+      KC_LBRC,    KC_7,    KC_8,    KC_9,    KC_RBRC,                XXXXXXX,  KC_LCBR, KC_RCBR, XXXXXXX, XXXXXXX,
   //|------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_QUOT,   KC_4,    KC_5,    KC_6, KC_EQL,                      KC_LEFT, MT(MOD_RSFT, KC_J),    MT(MOD_RALT, KC_K),    KC_DQT, KC_QUOT,
+      KC_QUOT,   KC_4,    KC_5,    KC_6, KC_EQL,                      XXXXXXX, KC_LPRN , KC_RPRN,  KC_DQT, KC_QUOT,
   //|------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_GRV,    KC_1,    KC_2,    KC_3, KC_BSLS,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+      KC_GRV,    KC_1,    KC_2,    KC_3, KC_BSLS,                      XXXXXXX, KC_LBRC, KC_RBRC, XXXXXXX, XXXXXXX,
   //|------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           KC_0,  KC_PMNS,     KC_SPC,   MO(3)
                                       //`--------------------------'  `--------------------------'
@@ -88,11 +89,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // navigation
     [2] = LAYOUT_split_3x5_2(
   //,---------------------------------------------.                   ,-----------------------------------------------------.
-      XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       KC_PGUP, KC_HOME,   KC_UP,  KC_END, KC_PGUP,
+      XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       XXXXXXX, KC_HOME,   KC_UP,  KC_END, KC_PGUP,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     KC_PGDN, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
+      KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     XXXXXXX, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  KC_PGDN,  KC_PGUP, XXXXXXX, KC_RSFT,
+      KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, KC_RSFT,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                            TG_NAV,  TG_NAV,     TG_NAV, KC_DEL
                                       //`--------------------------'  `--------------------------'
@@ -172,7 +173,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
-                                          QK_BOOT,  KC_ENT,     KC_SPC, _______
+                                          QK_BOOT,  KC_ENT,    XXXXXXX, KC_APP
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -234,7 +235,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (record->tap.count != 0) {
                     tap_code(KC_TAB);
                 }
-            }
+            }   
             return false;
         // ^ Locking layer2
 
