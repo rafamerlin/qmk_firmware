@@ -34,14 +34,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Pick good defaults for enabling homerow modifier
 #define TAPPING_TERM 200
-// Disabled due to achordion
-//#define TAPPING_TERM_PER_KEY
+// #define TAPPING_TERM_PER_KEY
 
 #define ACHORDION_ENABLE
 #define ACHORDION_STREAK
 
 // Enabling Permissive hold because of accordion
-#define PERMISSIVE_HOLD 
+#define PERMISSIVE_HOLD
+#define HOLD_ON_OTHER_KEY_PRESS_PER_KEY // <- This is to try to fix shift with accordion
+
 // Disabling per key because of accordion
 //#define PERMISSIVE_HOLD_PER_KEY
 

@@ -12,13 +12,13 @@
 #ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case KC_A:
-        case KC_I:
-        case KC_SCLN:
-            return TAPPING_TERM + 50;
-        case KC_Z:
-        case KC_SLSH:
-            return TAPPING_TERM - 175;
+        // case KC_A:
+        // case KC_I:
+        // case KC_SCLN:
+        //     return TAPPING_TERM + 50;
+        case MT(MOD_LSFT, KC_Z):
+        case MT(MOD_RSFT, KC_SLSH):
+            return TAPPING_TERM - 100;
         default:
             return TAPPING_TERM;
     }
@@ -40,6 +40,19 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 }
 #endif
 
+#ifdef HOLD_ON_OTHER_KEY_PRESS_PER_KEY
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case MT(MOD_LSFT, KC_Z):
+        case MT(MOD_RSFT, KC_SLSH):
+            // Immediately select the hold action when another key is pressed.
+            return true;
+        default:
+            // Do not select the hold action when another key is pressed.
+            return false;
+    }
+}
+#endif
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
     FIRST_VD = SAFE_RANGE,
@@ -217,20 +230,21 @@ void matrix_scan_user(void) {
             case MT(MOD_LALT, KC_D):
                 if (other_keycode == LT(2, KC_TAB)) {return true;}
                 break;
-
-            // Thumnb modifiers always run normally
-            case LT(2, KC_TAB):
-            case LT(5, KC_ENT):
-            case LT(3, KC_SPC):
-            case LT(1, KC_BSPC):
-                return true;
-                break;
         }
 
-        // Allow same-hand holds with non-alpha keys.
-        // if (other_keycode > KC_Z) { return true; }
+        // Also allow same-hand holds when the other key is in the rows below the
+        // alphas. I need the `% (MATRIX_ROWS / 2)` because my keyboard is split.
+        if (other_record->event.key.row % (MATRIX_ROWS / 2) >= 3) { return true; }
+
+        // Also allow same-hand holds when the held key is in the rows below the
+        // alphas. I need the `% (MATRIX_ROWS / 2)` because my keyboard is split.
+        if (tap_hold_record->event.key.row % (MATRIX_ROWS / 2) >= 3) { return true; }
     
         return achordion_opposite_hands(tap_hold_record, other_record);
+    }
+
+    uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
+       return 800;
     }
 #endif
 
