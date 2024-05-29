@@ -15,13 +15,15 @@
 #ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case KC_A:
-        case KC_I:
-        case KC_SCLN:
+        case MT(MOD_LSFT, KC_Z):
+            return TAPPING_TERM - 75;
+        case MT(MOD_RSFT, KC_SLSH):
+            return TAPPING_TERM - 75;
+
+        case LT(3, KC_SPC):
+        case MT(MOD_RCTL, KC_L):
             return TAPPING_TERM + 50;
-        case KC_Z:
-        case KC_SLSH:
-            return TAPPING_TERM - 175;
+
         default:
             return TAPPING_TERM;
     }
