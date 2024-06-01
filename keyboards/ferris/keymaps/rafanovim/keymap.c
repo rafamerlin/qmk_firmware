@@ -12,6 +12,23 @@
 #define KC_REDO_UPDATED LCTL(KC_Y)
 #define KC_FOCUS_BROWSER_BAR LCTL(KC_L)
 
+// Custom keycodes for the actions on Layer 8
+enum custom_keycodes {
+    FIRST_VD = SAFE_RANGE,
+    SECOND_VD,
+    THIRD_VD,
+    FOURTH_VD,
+    WORD_BK,
+    WORD_FWD,
+    C_GODEF,
+    C_GOIMP,
+    C_GOREF,
+    C_GODECL,
+    C_BACK,
+    C_FORWARD,
+    TG_NAV
+};
+
 #ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
@@ -46,22 +63,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     }
 }
 #endif
-
-// Custom keycodes for the actions on Layer 8
-enum custom_keycodes {
-    FIRST_VD = SAFE_RANGE,
-    SECOND_VD,
-    THIRD_VD,
-    FOURTH_VD,
-    WORD_BK,
-    WORD_FWD,
-    C_GODEF,
-    C_GOIMP,
-    C_GOREF,
-    C_BACK,
-    C_FORWARD,
-    TG_NAV
-};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_split_3x5_2(
@@ -175,20 +176,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_VD, FOURTH_VD, XXXXXXX, KC_KB_VOLUME_DOWN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,
+      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
-                                          QK_BOOT,  KC_ENT,    XXXXXXX, KC_APP
+                                          XXXXXXX,  KC_ENT,    XXXXXXX, KC_APP
                                       //`--------------------------'  `--------------------------'
   ),
 
 // coding
     [9] = LAYOUT_split_3x5_2(
     //,--------------------------------------------.                    ,---------------------------------------------.
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, C_GODEF, C_GOIMP, C_GOREF, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     C_GODECL, C_GODEF, C_GOIMP, C_GOREF, XXXXXXX,
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  C_BACK, XXXXXXX,C_FORWARD, XXXXXXX,
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                             XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX
                                         //`--------------------------'  `--------------------------'
@@ -329,6 +330,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_code(KC_F12);
             unregister_code(KC_LSFT);
             break;
+        case C_GODECL:
+            // Press Ctrl + Shift + Alt + F12
+            register_code(KC_LCTL);
+            register_code(KC_LSFT);
+            register_code(KC_LALT);
+            tap_code(KC_F12);
+            unregister_code(KC_LALT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LSFT);
+
     }
     return true;
 }
