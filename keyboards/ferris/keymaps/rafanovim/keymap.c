@@ -37,8 +37,13 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
         case MT(MOD_RSFT, KC_SLSH):
             return TAPPING_TERM - 75;
 
+        // Attempting to avoid 'This' typing '}his' instead
         case LT(3, KC_SPC):
             return TAPPING_TERM + 25;
+
+        // Trying to avoid actuaction of backspace when trying to type other stuff
+        case LT(1, KC_BSPC):
+            return TAPPING_TERM - 25;
 
         case MT(MOD_RCTL, KC_L):
             return TAPPING_TERM + 50;
