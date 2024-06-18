@@ -72,7 +72,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
      KC_LSFT, MT(MOD_LSFT, KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, MT(MOD_RSFT, KC_SLSH), KC_RSFT,
   //|----+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                         KC_X,LT(2, KC_TAB),  LT(5, KC_ENT),     LT(3, KC_SPC),   LT(1, KC_BSPC), KC_N
+            LT(2,KC_ESC), LT(2, KC_TAB),  LT(5, KC_ENT),           LT(3, KC_SPC),   LT(1, KC_BSPC), LT(1, KC_DEL)
                                       //`--------------------------'  `--------------------------'
 
   ),
@@ -86,18 +86,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
      XXXXXXX, KC_GRV,    KC_1,    KC_2,    KC_3, KC_BSLS,                      XXXXXXX, KC_LBRC, KC_RBRC, XXXXXXX, XXXXXXX,XXXXXXX,
   //|------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                         XXXXXXX, KC_0,  KC_PMNS,     KC_SPC,   MO(3),  XXXXXXX
+                                         KC_0, KC_DOT,  KC_PMNS,     KC_SPC,   MO(3),  KC_RALT
                                       //`--------------------------'  `--------------------------'
   ),
 
 // navigation
     [2] = LAYOUT_split_3x6_3(
   //,---------------------------------------------.                   ,-----------------------------------------------------.
-     XXXXXXX, XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       XXXXXXX, KC_HOME,   KC_UP,  KC_END, KC_PGUP,XXXXXXX,
+     KC_TAB, XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       XXXXXXX, KC_HOME,   KC_UP,  KC_END, KC_PGUP,XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-     XXXXXXX, KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     XXXXXXX, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,XXXXXXX,
+     KC_LCTL, KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     XXXXXXX, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    XXXXXXX,  KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, KC_RSFT,XXXXXXX,
+    KC_LSFT,  KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, KC_RSFT,KC_RSFT,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                            XXXXXXX, TG_NAV,  TG_NAV,     TG_NAV, KC_DEL,XXXXXXX
                                       //`--------------------------'  `--------------------------'
@@ -175,9 +175,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       XXXXXXX,XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_VD, FOURTH_VD, XXXXXXX, KC_KB_VOLUME_DOWN,XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      QK_BOOT,XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,XXXXXXX,
+      QK_BOOT, QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
-                                         XXXXXXX, XXXXXXX,  KC_ENT,    XXXXXXX, KC_APP,XXXXXXX
+                                         XXXXXXX, XXXXXXX,  KC_ENT,    XXXXXXX, KC_APP, KC_APP 
                                       //`--------------------------'  `--------------------------'
   ),
 
