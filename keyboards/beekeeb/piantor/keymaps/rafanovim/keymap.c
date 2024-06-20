@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include QMK_KEYBOARD_H
 #include "g/keymap_combo.h"
+#include "features/layer_lock.h"
 
 #define KC_COPY_UPDATED LCTL(KC_C)
 #define KC_CUT_UPDATED LCTL(KC_X)
@@ -14,7 +15,8 @@
 
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
-    FIRST_VD = SAFE_RANGE,
+    LLOCK = SAFE_RANGE,
+    FIRST_VD,
     SECOND_VD,
     THIRD_VD,
     FOURTH_VD,
@@ -25,8 +27,7 @@ enum custom_keycodes {
     C_GOREF,
     C_GODECL,
     C_BACK,
-    C_FORWARD,
-    TG_NAV
+    C_FORWARD
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -92,7 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_GRV,    KC_1,    KC_2,    KC_3, KC_BSLS,                      XXXXXXX, KC_LBRC, KC_RBRC, XXXXXXX, XXXXXXX,
   //|------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                KC_0, KC_DOT,  KC_PMNS,     KC_SPC,   MO(3),  KC_RALT
+                                KC_DOT, KC_0,  KC_PMNS,     KC_SPC,   MO(3),  KC_RALT
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -105,7 +106,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, KC_RSFT,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                XXXXXXX, TG_NAV,  TG_NAV,     TG_NAV, KC_DEL,XXXXXXX
+                                XXXXXXX, XXXXXXX,  XXXXXXX,     LLOCK, KC_DEL, XXXXXXX
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -201,15 +202,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-    static bool navlayer_locked = false;
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
+    
     bool custom_keypress = false;
     switch (keycode) {
         case WORD_FWD:
         case WORD_BK:
-        case TG_NAV:
-        case LT(2, KC_TAB): //Used on the locking nav
             custom_keypress = true;
             break;
     }
@@ -219,36 +218,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     switch (keycode) {
         //Leaving more complex stuff at the top
-        
-        // Locking navigation layer
-        case TG_NAV:
-            if (record->event.pressed) {
-                navlayer_locked = !navlayer_locked;
-                if (navlayer_locked) {
-                    layer_on(2);
-                } else {
-                    layer_off(2);
-                }
-            }
-            return false;
-        case LT(2, KC_TAB):
-            if (record->event.pressed) {
-                if (!navlayer_locked) {
-                    layer_on(2);
-                }
-            } else {
-                if (!navlayer_locked && layer_state_is(2)) {
-                    layer_off(2);
-                }
-            
-                //We need to check if it was tapped and send the tab manually as LT kind of breaks with these changes
-                if (record->tap.count != 0) {
-                    tap_code(KC_TAB);
-                }
-            }   
-            return false;
-        // ^ Locking layer2
-
         case WORD_BK:
             // Press Ctrl + Left
             // Doing it this way as if I hold it I want it to continue happenin
