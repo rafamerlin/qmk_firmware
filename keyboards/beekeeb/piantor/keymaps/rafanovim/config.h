@@ -42,3 +42,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
 #define COMBO_COUNT 5
+
+// Disable SPLIT_USB_DETECT (https://docs.beekeeb.com/piantor-keyboard#vbus-sensing-and-qmk)
+#define USB_VBUS_PIN GP24
