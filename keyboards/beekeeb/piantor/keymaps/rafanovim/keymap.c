@@ -5,6 +5,7 @@
 #include QMK_KEYBOARD_H
 #include "g/keymap_combo.h"
 #include "features/layer_lock.h"
+#include "keymap_brazilian_abnt2.h"
 
 #define KC_COPY_UPDATED LCTL(KC_C)
 #define KC_CUT_UPDATED LCTL(KC_X)
@@ -79,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|----+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
      MT(MOD_LSFT, KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, MT(MOD_RSFT, KC_SLSH),
   //|----+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                  LT(2,KC_ESC), LT(2, KC_TAB),  LT(5, KC_ENT),           LT(3, KC_SPC),   LT(1, KC_BSPC), LT(1, KC_DEL)
+                  LT(9,KC_ESC), LT(2, KC_TAB),  LT(5, KC_ENT),           LT(3, KC_SPC),   LT(1, KC_BSPC), LT(1, KC_DEL)
                                       //`--------------------------'  `--------------------------'
 
   ),
@@ -198,6 +199,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                      XXXXXXX,XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX,XXXXXXX
+                                        //`--------------------------'  `--------------------------'
+    ),
+
+// language WIP
+    [9] = LAYOUT_split_3x5_3(
+    //,--------------------------------------------.                    ,---------------------------------------------.
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, BR_ACUT, BR_GRV,
+    //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+        XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, BR_TILD, BR_CIRC,
+    //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
+        KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, BR_QUES,
+    //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
+                                     XXXXXXX,XXXXXXX,  XXXXXXX,  XXXXXXX, KC_BSPC, XXXXXXX
                                         //`--------------------------'  `--------------------------'
     )
 };
