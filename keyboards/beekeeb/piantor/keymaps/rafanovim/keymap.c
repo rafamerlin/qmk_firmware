@@ -207,7 +207,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,--------------------------------------------.                    ,---------------------------------------------.
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, BR_ACUT, BR_GRV,
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-        XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, BR_TILD, BR_CIRC,
+        XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, XXXXXXX,                      XXXXXXX, XXXXXXX, BR_CCED, BR_TILD, BR_CIRC,
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
         KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, BR_QUES,
     //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
