@@ -46,5 +46,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Disable SPLIT_USB_DETECT (https://docs.beekeeb.com/piantor-keyboard#vbus-sensing-and-qmk)
 #define USB_VBUS_PIN GP24
 
-// If we ever need the master side to be right we uncomment this, default is left
-// #define MASTER_RIGHT
+#define MASTER_RIGHT
