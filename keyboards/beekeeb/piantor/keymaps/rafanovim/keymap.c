@@ -17,6 +17,8 @@
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
     LLOCK = SAFE_RANGE,
+    LEFT_VD,
+    RIGHT_VD,
     FIRST_VD,
     SECOND_VD,
     THIRD_VD,
@@ -179,9 +181,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // extra
     [8] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,---------------------------------------------.
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_VD, SECOND_VD, XXXXXXX, KC_KB_VOLUME_UP,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_VOLU,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_VD, FOURTH_VD, XXXXXXX, KC_KB_VOLUME_DOWN,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
@@ -253,7 +255,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_RIGHT);
                 unregister_code(KC_LCTL);
             }  
-            break; 
+            break;
+        case LEFT_VD:
+            // Press Win + Ctrl + Left
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_LEFT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
+        case RIGHT_VD:
+            // Press Win + Ctrl + Right
+            register_code(KC_LWIN);
+            register_code(KC_LCTL);
+            tap_code(KC_RGHT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LWIN);
+            break;
         case FIRST_VD:
             // Press Win + Ctrl + Up + Left
             register_code(KC_LWIN);
