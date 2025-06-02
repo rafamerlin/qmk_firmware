@@ -17,12 +17,20 @@
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
     LLOCK = SAFE_RANGE,
+    //Basic left and right for windows and linux if configured
     LEFT_VD,
     RIGHT_VD,
+    //Linux specific virtual desktops
     FIRST_VD,
     SECOND_VD,
     THIRD_VD,
     FOURTH_VD,
+    //These are to emulate linux desktops on windows
+    FIRST_PROG_VD,
+    SECOND_PROG_VD,
+    THIRD_PROG_VD,
+    FOURTH_PROG_VD,
+    RESET_PROG_VD,
     WORD_BK,
     WORD_FWD,
     C_GODEF,
@@ -181,11 +189,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // extra
     [8] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,---------------------------------------------.
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_VOLU,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_VOLD,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPLY,
+      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_PROG_VD, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                    TO(7), XXXXXXX,  KC_ENT,    XXXXXXX, KC_APP, KC_APP 
                                       //`--------------------------'  `--------------------------'
@@ -217,6 +225,37 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         //`--------------------------'  `--------------------------'
     )
 };
+
+//Mimicking linux desktop selection on windows as windows doesn't support it
+bool is_changing_desktop = false;
+int current_virtual_desktop = 1; // Start at Desktop 1
+void move_to_desktop(int desired){
+    //Avoid multiple executions here
+    if (is_changing_desktop || current_virtual_desktop == desired){
+        return;
+    }
+       
+    is_changing_desktop = true;
+
+    int step = (current_virtual_desktop < desired) ? 1 : -1;
+    uint16_t keycode = (current_virtual_desktop < desired) ? KC_RIGHT : KC_LEFT;
+
+    for (int i = current_virtual_desktop; i != desired; i += step) {
+        register_code(KC_LWIN);
+        register_code(KC_LCTL);
+        tap_code(keycode);
+        unregister_code(KC_LCTL);
+        unregister_code(KC_LWIN);
+    }
+
+    current_virtual_desktop = desired;
+    is_changing_desktop = false;
+}
+
+void reset_current_desktop(void){
+    current_virtual_desktop=1;
+    is_changing_desktop = false;
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
@@ -307,6 +346,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_code(KC_RGHT);
             unregister_code(KC_LCTL);
             unregister_code(KC_LWIN);
+            break;
+        case FIRST_PROG_VD:
+            move_to_desktop(1);
+            break;
+        case SECOND_PROG_VD:
+            move_to_desktop(2);
+            break;
+        case THIRD_PROG_VD:
+            move_to_desktop(3);
+            break;
+        case FOURTH_PROG_VD:
+            move_to_desktop(4);
+            break;
+        case RESET_PROG_VD:
+            reset_current_desktop();
             break;
         case C_BACK:
             // Press Ctrl + -
