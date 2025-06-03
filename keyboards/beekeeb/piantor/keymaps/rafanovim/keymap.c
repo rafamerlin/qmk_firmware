@@ -30,7 +30,6 @@ enum custom_keycodes {
     SECOND_PROG_VD,
     THIRD_PROG_VD,
     FOURTH_PROG_VD,
-    RESET_PROG_VD,
     WORD_BK,
     WORD_FWD,
     C_GODEF,
@@ -193,7 +192,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_PROG_VD, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
+      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                    TO(7), XXXXXXX,  KC_ENT,    XXXXXXX, KC_APP, KC_APP 
                                       //`--------------------------'  `--------------------------'
@@ -229,31 +228,46 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //Mimicking linux desktop selection on windows as windows doesn't support it
 bool is_changing_desktop = false;
 int current_virtual_desktop = 1; // Start at Desktop 1
+
+void multi_tap(int times, uint16_t keycode){
+    for (int i = 0; i < times; i++){
+        tap_code(keycode);
+    }
+}
+
 void move_to_desktop(int desired){
     //Avoid multiple executions here
-    if (is_changing_desktop || current_virtual_desktop == desired){
+    if (is_changing_desktop){
         return;
     }
        
     is_changing_desktop = true;
 
-    int step = (current_virtual_desktop < desired) ? 1 : -1;
-    uint16_t keycode = (current_virtual_desktop < desired) ? KC_RIGHT : KC_LEFT;
+    register_code(KC_LWIN);
+    register_code(KC_LCTL);
+    switch (desired) {
+        case 1:
+            //We it 3 times so it acts as a reset as well
+            multi_tap(3, KC_LEFT);
+            break;
+        case 4:
+            //We it 3 times so it acts as a reset as well
+            multi_tap(3, KC_RIGHT);
+            break;
+        case 2:
+        case 3:
+            int movement = (current_virtual_desktop - desired);
+            //Importing math just for math.abs is too much.
+            movement = (movement < 0) ? -movement : movement;
+            uint16_t keycode = (current_virtual_desktop < desired) ? KC_RIGHT : KC_LEFT;
 
-    for (int i = current_virtual_desktop; i != desired; i += step) {
-        register_code(KC_LWIN);
-        register_code(KC_LCTL);
-        tap_code(keycode);
-        unregister_code(KC_LCTL);
-        unregister_code(KC_LWIN);
+            multi_tap(movement, keycode);
+            break;
     }
+    unregister_code(KC_LCTL);
+    unregister_code(KC_LWIN);
 
     current_virtual_desktop = desired;
-    is_changing_desktop = false;
-}
-
-void reset_current_desktop(void){
-    current_virtual_desktop=1;
     is_changing_desktop = false;
 }
 
@@ -358,9 +372,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case FOURTH_PROG_VD:
             move_to_desktop(4);
-            break;
-        case RESET_PROG_VD:
-            reset_current_desktop();
             break;
         case C_BACK:
             // Press Ctrl + -
