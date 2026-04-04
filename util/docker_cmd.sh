@@ -63,6 +63,10 @@ if [ "$RUNTIME" = "docker" ]; then
 	uid_arg="--user $(id -u):$(id -g)"
 fi
 
+# Allow overriding the QMK CLI image via environment variable `QMK_CLI_IMAGE`.
+# Example: QMK_CLI_IMAGE=local/qmk_cli:dev ./util/docker_cmd.sh make ...
+IMAGE="${QMK_CLI_IMAGE:-ghcr.io/qmk/qmk_cli}"
+
 # Run container and build firmware
 "$RUNTIME" run --rm -it \
 	$usb_args \
@@ -73,5 +77,5 @@ fi
 	-e SKIP_GIT="$SKIP_GIT" \
 	-e SKIP_VERSION="$SKIP_VERSION" \
 	-e MAKEFLAGS="$MAKEFLAGS" \
-	ghcr.io/qmk/qmk_cli \
+	$IMAGE \
 	"$@"

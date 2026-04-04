@@ -1,0 +1,13 @@
+FROM ghcr.io/qmk/qmk_cli
+
+# Copy repository requirements and install them into the container image
+COPY requirements.txt /tmp/requirements.txt
+
+# Use the same python used by the qmk wrapper if present, else fallback to python3
+RUN if [ -x /opt/uv/tools/qmk/bin/python3 ]; then \
+      /opt/uv/tools/qmk/bin/python3 -m pip install --no-cache-dir -r /tmp/requirements.txt; \
+    else \
+      python3 -m pip install --no-cache-dir -r /tmp/requirements.txt; \
+    fi
+
+# Keep entrypoint/command behaviour from base image

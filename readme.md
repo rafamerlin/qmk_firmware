@@ -1,3 +1,42 @@
+## Raf's notes
+When checking out use submodules:
+i.e.
+`git clone --recurse-submodules git@github.com:rafamerlin/qmk_firmware.git`
+
+
+Then use docker — it's easier. Recommended (non-interactive, reproducible):
+
+1. Build a custom QMK CLI image that pre-installs this repo's Python deps:
+
+```bash
+docker build -f Dockerfile.qmk_cli -t local/qmk_cli:dev .
+```
+
+2. Compile using the custom image:
+
+```bash
+QMK_CLI_IMAGE=local/qmk_cli:dev ./util/docker_build.sh beekeeb/piantor:rafanovim
+```
+
+To flash (if device attached):
+
+```bash
+QMK_CLI_IMAGE=local/qmk_cli:dev ./util/docker_build.sh beekeeb/piantor:rafanovim:flash
+```
+
+If you prefer not to build an image, run setup once inside the container to install Python deps interactively:
+
+```bash
+./util/docker_cmd.sh qmk setup -y
+```
+
+Or install and build in a single ephemeral container (less reproducible):
+
+```bash
+docker run --rm -v "$PWD":/qmk_firmware -w /qmk_firmware ghcr.io/qmk/qmk_cli sh -lc '/opt/uv/tools/qmk/bin/python3 -m pip install -r /qmk_firmware/requirements.txt && make beekeeb/piantor:rafanovim'
+```
+
+
 # Quantum Mechanical Keyboard Firmware
 
 [![Current Version](https://img.shields.io/github/tag/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/tags)
