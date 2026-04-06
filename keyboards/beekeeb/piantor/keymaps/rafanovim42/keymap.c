@@ -121,11 +121,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,--------------------------------------------.                    ,---------------------------------------------
      XXXXXXX, QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-     XXXXXXX,XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,XXXXXXX,
+    XXXXXXX,XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, XXXXXXX,XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
     XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
-                                         XXXXXXX, KC_RPRN,  KC_ENT,     KC_BTN1, KC_BTN2,XXXXXXX
+                                         XXXXXXX, KC_RPRN,  KC_ENT,     MS_BTN1, MS_BTN2,XXXXXXX
                                       //`--------------------------'  `--------------------------'
   ),
 
