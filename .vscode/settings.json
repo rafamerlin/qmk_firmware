@@ -10,6 +10,13 @@
         "**/*.uf2": true
     },
     "files.associations": {
+        // QMK Filetypes
+        "keyboard.json": "jsonc",
+        "info.json": "jsonc",
+        "keymap.json": "jsonc",
+        "qmk.json": "jsonc",
+        "qmk_module.json": "jsonc",
+        // Standard filetypes
         "*.h": "c",
         "*.c": "c",
         "*.inc": "c",
@@ -28,27 +35,23 @@
     "[json]": {
         "editor.formatOnSave": false
     },
-    "clangd.arguments": [
-        "--header-insertion=never"
-    ],
-    "workbench.colorCustomizations": {
-        "activityBar.activeBackground": "#ae13cf",
-        "activityBar.background": "#ae13cf",
-        "activityBar.foreground": "#e7e7e7",
-        "activityBar.inactiveForeground": "#e7e7e799",
-        "activityBarBadge.background": "#3a3105",
-        "activityBarBadge.foreground": "#e7e7e7",
-        "commandCenter.border": "#e7e7e799",
-        "sash.hoverBorder": "#ae13cf",
-        "statusBar.background": "#870fa0",
-        "statusBar.foreground": "#e7e7e7",
-        "statusBarItem.hoverBackground": "#ae13cf",
-        "statusBarItem.remoteBackground": "#870fa0",
-        "statusBarItem.remoteForeground": "#e7e7e7",
-        "titleBar.activeBackground": "#870fa0",
-        "titleBar.activeForeground": "#e7e7e7",
-        "titleBar.inactiveBackground": "#870fa099",
-        "titleBar.inactiveForeground": "#e7e7e799"
-    },
-    "peacock.color": "#870fa0"
+    "clangd.arguments": ["--header-insertion=never"],
+    "json.schemas": [
+        {
+            "fileMatch": ["qmk.json"],
+            "url": "./data/schemas/user_repo_v1_1.jsonschema"
+        },
+        {
+            "fileMatch": ["qmk_module.json"],
+            "url": "./data/schemas/community_module.jsonschema"
+        },
+        {
+            "fileMatch": ["keyboard.json", "info.json"],
+            "url": "./data/schemas/keyboard.jsonschema"
+        },
+        {
+            "fileMatch": ["keymap.json"],
+            "url": "./data/schemas/keymap.jsonschema"
+        }
+    ]
 }
