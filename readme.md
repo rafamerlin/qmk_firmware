@@ -13,11 +13,13 @@ Compile using the custom image:
 ./util/docker_build.sh beekeeb/piantor:rafanovim
 ```
 
-To flash (if device attached):
+To flash (if device attached, sleep 15 is to attach it before the command actually runs):
 
 ```bash
-/util/docker_build.sh beekeeb/piantor:rafanovim:flash
+sleep 15 && ./util/docker_build.sh beekeeb/piantor:rafanovim:flash
 ```
+
+On Fedora this may not work, so just dolphin . and get the file (will be on the root of QMK after you compile), copy it and paste in the flash drive after you put it on bootloader
 
 
 # Quantum Mechanical Keyboard Firmware

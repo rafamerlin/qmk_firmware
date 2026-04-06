@@ -13,6 +13,7 @@
 #define KC_UNDO_UPDATED LCTL(KC_Z)
 #define KC_REDO_UPDATED LCTL(KC_Y)
 #define KC_FOCUS_BROWSER_BAR LCTL(KC_L)
+#define SHORTCUT_TAP_DELAY 10
 
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
@@ -37,7 +38,8 @@ enum custom_keycodes {
     C_GOREF,
     C_GODECL,
     C_BACK,
-    C_FORWARD
+    C_FORWARD,
+    SH_F7
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -114,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     XXXXXXX, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, KC_RSFT,
+      KC_LSFT,    KC_X,    KC_C,    KC_V, XXXXXXX,                      XXXXXXX,  SH_F7,  KC_F7, XXXXXXX, KC_RSFT,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                 XXXXXXX, XXXXXXX,  XXXXXXX,     LLOCK, KC_DEL, XXXXXXX
                                       //`--------------------------'  `--------------------------'
@@ -225,17 +227,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-//Mimicking linux desktop selection on windows as windows doesn't support it
-bool is_changing_desktop = false;
-int current_virtual_desktop = 1; // Start at Desktop 1
+// Mimic desktop navigation with reliable modded taps.
+static bool is_changing_desktop = false;
+static uint8_t current_virtual_desktop = 1;
 
-void multi_tap(int times, uint16_t keycode){
-    for (int i = 0; i < times; i++){
-        tap_code(keycode);
+static void tap_shortcut(uint16_t keycode) {
+    tap_code16_delay(keycode, SHORTCUT_TAP_DELAY);
+}
+
+static void multi_tap(uint8_t times, uint16_t keycode) {
+    for (uint8_t i = 0; i < times; i++) {
+        tap_shortcut(keycode);
     }
 }
 
-void move_to_desktop(int desired){
+static void move_to_desktop(uint8_t desired) {
     //Avoid multiple executions here
     if (is_changing_desktop){
         return;
@@ -243,29 +249,24 @@ void move_to_desktop(int desired){
        
     is_changing_desktop = true;
 
-    register_code(KC_LWIN);
-    register_code(KC_LCTL);
     switch (desired) {
         case 1:
             //We it 3 times so it acts as a reset as well
-            multi_tap(3, KC_LEFT);
+            multi_tap(3, LCTL(LGUI(KC_LEFT)));
             break;
         case 4:
             //We it 3 times so it acts as a reset as well
-            multi_tap(3, KC_RIGHT);
+            multi_tap(3, LCTL(LGUI(KC_RGHT)));
             break;
         case 2:
-        case 3:
-            int movement = (current_virtual_desktop - desired);
-            //Importing math just for math.abs is too much.
-            movement = (movement < 0) ? -movement : movement;
-            uint16_t keycode = (current_virtual_desktop < desired) ? KC_RIGHT : KC_LEFT;
+        case 3: {
+            uint8_t movement = current_virtual_desktop > desired ? current_virtual_desktop - desired : desired - current_virtual_desktop;
+            uint16_t keycode = (current_virtual_desktop < desired) ? LCTL(LGUI(KC_RGHT)) : LCTL(LGUI(KC_LEFT));
 
             multi_tap(movement, keycode);
             break;
+        }
     }
-    unregister_code(KC_LCTL);
-    unregister_code(KC_LWIN);
 
     current_virtual_desktop = desired;
     is_changing_desktop = false;
@@ -288,78 +289,42 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         //Leaving more complex stuff at the top
         case WORD_BK:
-            // Press Ctrl + Left
-            // Doing it this way as if I hold it I want it to continue happenin
+            // Keep this as a held chord so word movement repeats while held.
             if (record->event.pressed) {
-                register_code(KC_LCTL);
-                register_code(KC_LEFT);
+                register_code16(LCTL(KC_LEFT));
             } else {
-                unregister_code(KC_LEFT);
-                unregister_code(KC_LCTL);
+                unregister_code16(LCTL(KC_LEFT));
             }
             break;
         case WORD_FWD:
-            // Press Ctrl + Left
-            // Doing it this way as if I hold it I want it to continue happenin
+            // Keep this as a held chord so word movement repeats while held.
             if (record->event.pressed) {
-                register_code(KC_LCTL);
-                register_code(KC_RIGHT);
+                register_code16(LCTL(KC_RGHT));
             } else {
-                unregister_code(KC_RIGHT);
-                unregister_code(KC_LCTL);
+                unregister_code16(LCTL(KC_RGHT));
             }  
             break;
         case LEFT_VD:
-            // Press Win + Ctrl + Left
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_LEFT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_LEFT)));
             break;
         case RIGHT_VD:
-            // Press Win + Ctrl + Right
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_RGHT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_RGHT)));
             break;
         case FIRST_VD:
-            // Press Win + Ctrl + Up + Left
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_UP);
-            tap_code(KC_LEFT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_UP)));
+            tap_shortcut(LCTL(LGUI(KC_LEFT)));
             break;
         case SECOND_VD:
-            // Press Win + Ctrl + Up + Right
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_UP);
-            tap_code(KC_RGHT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_UP)));
+            tap_shortcut(LCTL(LGUI(KC_RGHT)));
             break;
         case THIRD_VD:
-            // Press Win + Ctrl + Down + Left
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_DOWN);
-            tap_code(KC_LEFT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_DOWN)));
+            tap_shortcut(LCTL(LGUI(KC_LEFT)));
             break;
         case FOURTH_VD:
-            // Press Win + Ctrl + Down + Right
-            register_code(KC_LWIN);
-            register_code(KC_LCTL);
-            tap_code(KC_DOWN);
-            tap_code(KC_RGHT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LWIN);
+            tap_shortcut(LCTL(LGUI(KC_DOWN)));
+            tap_shortcut(LCTL(LGUI(KC_RGHT)));
             break;
         case FIRST_PROG_VD:
             move_to_desktop(1);
@@ -374,42 +339,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             move_to_desktop(4);
             break;
         case C_BACK:
-            // Press Ctrl + -
-            register_code(KC_LCTL);
-            tap_code(KC_MINUS);
-            unregister_code(KC_LCTL);
+            tap_shortcut(LCTL(KC_MINS));
             break;
         case C_FORWARD:
-            // Press Ctrl + =
-            register_code(KC_LCTL);
-            tap_code(KC_EQL);
-            unregister_code(KC_LCTL);
+            tap_shortcut(LCTL(KC_EQL));
             break; 
         case C_GODEF:
-            // Press F12
-            tap_code(KC_F12);
+            tap_shortcut(KC_F12);
             break; 
         case C_GOIMP:
-            // Press Ctrl + F12
-            register_code(KC_LCTL);
-            tap_code(KC_F12);
-            unregister_code(KC_LCTL);
+            tap_shortcut(LCTL(KC_F12));
             break; 
         case C_GOREF:
-            // Press Shift + F12
-            register_code(KC_LSFT);
-            tap_code(KC_F12);
-            unregister_code(KC_LSFT);
+            tap_shortcut(LSFT(KC_F12));
             break;
         case C_GODECL:
-            // Press Ctrl + Shift + Alt + F12
-            register_code(KC_LCTL);
-            register_code(KC_LSFT);
-            register_code(KC_LALT);
-            tap_code(KC_F12);
-            unregister_code(KC_LALT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_LSFT);
+            tap_shortcut(LCTL(LSFT(LALT(KC_F12))));
+            break;
+        case SH_F7:
+            tap_shortcut(LSFT(KC_F7));
+            break;
 
     }
     return true;
