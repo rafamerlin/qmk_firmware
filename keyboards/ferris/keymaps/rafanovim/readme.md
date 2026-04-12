@@ -1,10 +1,10 @@
 First flash:
-`qmk flash -kb ferris/sweep -km rafa -bl avrdude-split-right`
+`qmk flash -kb ferris/sweep -km rafanovim -bl avrdude-split-right`
 
-`qmk flash -kb ferris/sweep -km rafa -bl avrdude-split-left`
+`qmk flash -kb ferris/sweep -km rafanovim -bl avrdude-split-left`
 
 After we flashed we then can just:
-`qmk flash -kb ferris/sweep -km rafa` 
+`qmk flash -kb ferris/sweep -km rafanovim` 
 
 If running the first time, use `qmk setup` and maybe the makefile with the `git-submodules` option
 

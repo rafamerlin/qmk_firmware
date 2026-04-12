@@ -9,6 +9,8 @@
         "**/*.bin": true,
         "**/*.uf2": true
     },
+    // Disable C# Dev Kit auto-creating a solution in the workspace
+    "dotnet.automaticallyCreateSolutionInWorkspace": false,
     "files.associations": {
         // QMK Filetypes
         "keyboard.json": "jsonc",

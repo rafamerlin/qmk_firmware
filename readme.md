@@ -15,6 +15,8 @@ Compile using the custom image:
 
 To flash (if device attached, sleep 15 is to attach it before the command actually runs):
 
+You may need sudo on fedora do be able to access the flash drive
+
 ```bash
 sleep 15 && ./util/docker_build.sh beekeeb/piantor:rafanovim:flash
 ```
