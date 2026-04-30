@@ -37,12 +37,10 @@ enum custom_keycodes {
     C_GOIMP,
     C_GOREF,
     C_GODECL,
-    C_BACK,
-    C_FORWARD,
-     SH_F7,
-     OS_MODE_TOG,
-     LED_UP,
-     LED_DOWN
+     C_BACK,
+     C_FORWARD,
+      SH_F7,
+     OS_MODE_TOG
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -193,9 +191,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // extra
     [8] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,---------------------------------------------.
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LED_UP,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, LED_DOWN,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
+     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
@@ -281,6 +279,10 @@ void keyboard_post_init_user(void) {
 
 void housekeeping_task_user(void) {
     os_mode_led_task();
+}
+
+void layer_lock_set_user(layer_state_t locked_layers) {
+    os_mode_led_set_layer_lock(locked_layers != 0);
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -372,12 +374,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case OS_MODE_TOG:
             os_mode_led_toggle();
-            break;
-        case LED_UP:
-            os_mode_led_increase_brightness();
-            break;
-        case LED_DOWN:
-            os_mode_led_decrease_brightness();
             break;
 
     }

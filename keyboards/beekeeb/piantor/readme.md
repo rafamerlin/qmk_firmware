@@ -33,3 +33,20 @@ I ran `make submodules`
 and then `qmk git-submodule`
 
 
+
+
+Do I need to flash each side invididually or not?
+
+Yes, later, if you only change keybindings and nothing about the LED/split feature, flashing just the master/USB side should usually be enough.
+Good one-side-only examples:
+- remaps
+- layer changes
+- combo changes
+- macro behavior
+- tap-hold tuning
+Flash both halves if you change anything involving:
+- features/os_mode_led.c / .h
+- split sync / transaction IDs
+- housekeeping_task_user()
+- custom shared state
+- anything hardware- or side-specific
