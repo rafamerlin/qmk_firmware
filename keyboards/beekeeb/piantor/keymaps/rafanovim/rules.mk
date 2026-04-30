@@ -10,3 +10,4 @@ SEND_STRING_ENABLE 				= yes
 EXTRAFLAGS += -flto
 VPATH += keyboards/gboards
 SRC += features/layer_lock.c
+SRC += features/os_mode_led.c

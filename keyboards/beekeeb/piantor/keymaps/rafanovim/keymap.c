@@ -5,6 +5,7 @@
 #include QMK_KEYBOARD_H
 #include "g/keymap_combo.h"
 #include "features/layer_lock.h"
+#include "features/os_mode_led.h"
 #include "keymap_brazilian_abnt2.h"
 
 #define KC_COPY_UPDATED LCTL(KC_C)
@@ -14,8 +15,6 @@
 #define KC_REDO_UPDATED LCTL(KC_Y)
 #define KC_FOCUS_BROWSER_BAR LCTL(KC_L)
 #define SHORTCUT_TAP_DELAY 10
-#define PICO_BOARD_LED_PIN GP25
-
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
     LLOCK = SAFE_RANGE,
@@ -41,7 +40,9 @@ enum custom_keycodes {
     C_BACK,
     C_FORWARD,
      SH_F7,
-     OS_MODE_TOG
+     OS_MODE_TOG,
+     LED_UP,
+     LED_DOWN
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -192,9 +193,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // extra
     [8] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,---------------------------------------------.
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LED_UP,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
+     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, LED_DOWN,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
@@ -232,11 +233,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Mimic desktop navigation with reliable modded taps.
 static bool is_changing_desktop = false;
 static uint8_t current_virtual_desktop = 1;
-static bool is_linux_mode = false;
-
-static void sync_os_mode_led(void) {
-    gpio_write_pin(PICO_BOARD_LED_PIN, is_linux_mode);
-}
 
 static void tap_shortcut(uint16_t keycode) {
     tap_code16_delay(keycode, SHORTCUT_TAP_DELAY);
@@ -280,8 +276,11 @@ static void move_to_desktop(uint8_t desired) {
 }
 
 void keyboard_post_init_user(void) {
-    gpio_set_pin_output(PICO_BOARD_LED_PIN);
-    sync_os_mode_led();
+    os_mode_led_init();
+}
+
+void housekeeping_task_user(void) {
+    os_mode_led_task();
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -372,8 +371,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_shortcut(LSFT(KC_F7));
             break;
         case OS_MODE_TOG:
-            is_linux_mode = !is_linux_mode;
-            sync_os_mode_led();
+            os_mode_led_toggle();
+            break;
+        case LED_UP:
+            os_mode_led_increase_brightness();
+            break;
+        case LED_DOWN:
+            os_mode_led_decrease_brightness();
             break;
 
     }

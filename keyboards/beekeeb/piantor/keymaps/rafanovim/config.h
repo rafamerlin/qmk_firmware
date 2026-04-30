@@ -48,3 +48,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // If we ever need the master side to be right we uncomment this, default is left
 // #define MASTER_RIGHT
+
+#define SPLIT_TRANSACTION_IDS_USER RPC_ID_USER_LED_SYNC
