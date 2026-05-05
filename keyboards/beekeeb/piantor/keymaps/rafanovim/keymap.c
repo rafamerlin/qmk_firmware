@@ -325,7 +325,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 uint8_t mods = get_mods();
                 clear_mods();
                 bool shift = mods & MOD_MASK_SHIFT;
-                tap_shortcut(shift ? LSFT(LGUI(KC_UP)) : LGUI(KC_UP));
+                tap_shortcut(shift ? LSFT(LALT(KC_UP)) : LALT(KC_UP));
                 set_mods(mods);
             } else {
                 tap_code(KC_HOME);
@@ -337,7 +337,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 uint8_t mods = get_mods();
                 clear_mods();
                 bool shift = mods & MOD_MASK_SHIFT;
-                tap_shortcut(shift ? LSFT(LGUI(KC_DOWN)) : LGUI(KC_DOWN));
+                tap_shortcut(shift ? LSFT(LALT(KC_DOWN)) : LALT(KC_DOWN));
                 set_mods(mods);
             } else {
                 tap_code(KC_END);
