@@ -8,12 +8,6 @@
 #include "features/os_mode_led.h"
 #include "keymap_brazilian_abnt2.h"
 
-#define KC_COPY_UPDATED LCTL(KC_C)
-#define KC_CUT_UPDATED LCTL(KC_X)
-#define KC_PASTE_UPDATED LCTL(KC_V)
-#define KC_UNDO_UPDATED LCTL(KC_Z)
-#define KC_REDO_UPDATED LCTL(KC_Y)
-#define KC_FOCUS_BROWSER_BAR LCTL(KC_L)
 #define SHORTCUT_TAP_DELAY 10
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
@@ -228,49 +222,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-// Mimic desktop navigation with reliable modded taps.
-static bool is_changing_desktop = false;
-static uint8_t current_virtual_desktop = 1;
+// Toggled alongside os_mode_led_toggle() so macros can branch on OS mode.
+// os_mode_led.c keeps its own copy for LED state — we duplicate the bit here
+// rather than touching os_mode_led.{c,h} (changing those forces flashing both
+// halves individually).
+static bool mac_mode = false;
 
 static void tap_shortcut(uint16_t keycode) {
     tap_code16_delay(keycode, SHORTCUT_TAP_DELAY);
-}
-
-static void multi_tap(uint8_t times, uint16_t keycode) {
-    for (uint8_t i = 0; i < times; i++) {
-        tap_shortcut(keycode);
-    }
-}
-
-static void move_to_desktop(uint8_t desired) {
-    //Avoid multiple executions here
-    if (is_changing_desktop){
-        return;
-    }
-       
-    is_changing_desktop = true;
-
-    switch (desired) {
-        case 1:
-            //We it 3 times so it acts as a reset as well
-            multi_tap(3, LCTL(LGUI(KC_LEFT)));
-            break;
-        case 4:
-            //We it 3 times so it acts as a reset as well
-            multi_tap(3, LCTL(LGUI(KC_RGHT)));
-            break;
-        case 2:
-        case 3: {
-            uint8_t movement = current_virtual_desktop > desired ? current_virtual_desktop - desired : desired - current_virtual_desktop;
-            uint16_t keycode = (current_virtual_desktop < desired) ? LCTL(LGUI(KC_RGHT)) : LCTL(LGUI(KC_LEFT));
-
-            multi_tap(movement, keycode);
-            break;
-        }
-    }
-
-    current_virtual_desktop = desired;
-    is_changing_desktop = false;
 }
 
 void keyboard_post_init_user(void) {
@@ -301,22 +260,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     switch (keycode) {
         //Leaving more complex stuff at the top
-        case WORD_BK:
-            // Keep this as a held chord so word movement repeats while held.
+        case WORD_BK: {
+            uint16_t chord = mac_mode ? LALT(KC_LEFT) : LCTL(KC_LEFT);
             if (record->event.pressed) {
-                register_code16(LCTL(KC_LEFT));
+                register_code16(chord);
             } else {
-                unregister_code16(LCTL(KC_LEFT));
+                unregister_code16(chord);
             }
             break;
-        case WORD_FWD:
-            // Keep this as a held chord so word movement repeats while held.
+        }
+        case WORD_FWD: {
+            uint16_t chord = mac_mode ? LALT(KC_RGHT) : LCTL(KC_RGHT);
             if (record->event.pressed) {
-                register_code16(LCTL(KC_RGHT));
+                register_code16(chord);
             } else {
-                unregister_code16(LCTL(KC_RGHT));
-            }  
+                unregister_code16(chord);
+            }
             break;
+        }
         case LEFT_VD:
             tap_shortcut(LCTL(LGUI(KC_LEFT)));
             break;
@@ -340,29 +301,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_shortcut(LCTL(LGUI(KC_RGHT)));
             break;
         case FIRST_PROG_VD:
-            move_to_desktop(1);
+            tap_shortcut(LCTL(LALT(KC_1)));
             break;
         case SECOND_PROG_VD:
-            move_to_desktop(2);
+            tap_shortcut(LCTL(LALT(KC_2)));
             break;
         case THIRD_PROG_VD:
-            move_to_desktop(3);
+            tap_shortcut(LCTL(LALT(KC_3)));
             break;
         case FOURTH_PROG_VD:
-            move_to_desktop(4);
+            tap_shortcut(LCTL(LALT(KC_4)));
             break;
         case C_BACK:
-            tap_shortcut(LCTL(KC_MINS));
+            tap_shortcut(mac_mode ? LGUI(KC_MINS) : LCTL(KC_MINS));
             break;
         case C_FORWARD:
-            tap_shortcut(LCTL(KC_EQL));
-            break; 
+            tap_shortcut(mac_mode ? LGUI(KC_EQL) : LCTL(KC_EQL));
+            break;
         case C_GODEF:
             tap_shortcut(KC_F12);
             break; 
         case C_GOIMP:
-            tap_shortcut(LCTL(KC_F12));
-            break; 
+            tap_shortcut(mac_mode ? LGUI(KC_F12) : LCTL(KC_F12));
+            break;
         case C_GOREF:
             tap_shortcut(LSFT(KC_F12));
             break;
@@ -373,6 +334,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_shortcut(LSFT(KC_F7));
             break;
         case OS_MODE_TOG:
+            mac_mode = !mac_mode;
             os_mode_led_toggle();
             break;
 
