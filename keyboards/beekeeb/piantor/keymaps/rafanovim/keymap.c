@@ -1,6 +1,3 @@
-// this is the style you want to emulate.
-// This is the canonical layout file for the Quantum project. If you want to add another keyboard,
-
 #include <stdint.h>
 #include QMK_KEYBOARD_H
 #include "g/keymap_combo.h"
@@ -8,6 +5,12 @@
 #include "features/os_mode_led.h"
 #include "keymap_brazilian_abnt2.h"
 
+// macOS modifier swap for the Piantor (System Settings → Keyboard → Modifier Keys):
+//   Option (LALT) → Command,  Command (LGUI) → Option
+// So in mac_mode, to make macOS see:
+//   Command → send LALT
+//   Option  → send LGUI
+//   Control → send LCTL (unchanged)
 #define SHORTCUT_TAP_DELAY 10
 // Custom keycodes for the actions on Layer 8
 enum custom_keycodes {
@@ -15,11 +18,6 @@ enum custom_keycodes {
     //Basic left and right for windows and linux if configured
     LEFT_VD,
     RIGHT_VD,
-    //Linux specific virtual desktops
-    FIRST_VD,
-    SECOND_VD,
-    THIRD_VD,
-    FOURTH_VD,
     //These are to emulate linux desktops on windows
     FIRST_PROG_VD,
     SECOND_PROG_VD,
@@ -31,10 +29,11 @@ enum custom_keycodes {
     C_GOIMP,
     C_GOREF,
     C_GODECL,
-     C_BACK,
-     C_FORWARD,
-      SH_F7,
-     OS_MODE_TOG
+    C_BACK,
+    C_FORWARD,
+    SH_F7,
+    OS_MODE_TOG,
+    C_PSCR
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -146,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // function
     [5] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,-----------------------------------------------.
-      KC_F12, KC_F7, KC_F8, KC_F9, KC_PSCR,                               KC_PSCR, KC_F7, KC_F8, KC_F9, KC_F12,
+      KC_F12, KC_F7, KC_F8, KC_F9, C_PSCR,                               C_PSCR, KC_F7, KC_F8, KC_F9, KC_F12,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--|
       KC_F11, KC_F4, KC_F5, KC_F6, KC_LSFT,                               KC_RSFT, KC_F4, KC_F5, KC_F6, KC_F11,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--|
@@ -222,10 +221,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-// Toggled alongside os_mode_led_toggle() so macros can branch on OS mode.
-// os_mode_led.c keeps its own copy for LED state — we duplicate the bit here
-// rather than touching os_mode_led.{c,h} (changing those forces flashing both
-// halves individually).
 static bool mac_mode = false;
 
 static void tap_shortcut(uint16_t keycode) {
@@ -261,81 +256,74 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         //Leaving more complex stuff at the top
         case WORD_BK: {
-            uint16_t chord = mac_mode ? LALT(KC_LEFT) : LCTL(KC_LEFT);
+            static uint16_t word_bk_chord;
             if (record->event.pressed) {
-                register_code16(chord);
+                word_bk_chord = mac_mode ? LGUI(KC_LEFT) : LCTL(KC_LEFT);
+                register_code16(word_bk_chord);
             } else {
-                unregister_code16(chord);
+                unregister_code16(word_bk_chord);
             }
             break;
         }
         case WORD_FWD: {
-            uint16_t chord = mac_mode ? LALT(KC_RGHT) : LCTL(KC_RGHT);
+            static uint16_t word_fwd_chord;
             if (record->event.pressed) {
-                register_code16(chord);
+                word_fwd_chord = mac_mode ? LGUI(KC_RGHT) : LCTL(KC_RGHT);
+                register_code16(word_fwd_chord);
             } else {
-                unregister_code16(chord);
+                unregister_code16(word_fwd_chord);
             }
             break;
         }
         case LEFT_VD:
-            tap_shortcut(LCTL(LGUI(KC_LEFT)));
+            tap_shortcut(mac_mode ? LCTL(LALT(KC_LEFT)) : LCTL(LGUI(KC_LEFT)));
             break;
         case RIGHT_VD:
-            tap_shortcut(LCTL(LGUI(KC_RGHT)));
-            break;
-        case FIRST_VD:
-            tap_shortcut(LCTL(LGUI(KC_UP)));
-            tap_shortcut(LCTL(LGUI(KC_LEFT)));
-            break;
-        case SECOND_VD:
-            tap_shortcut(LCTL(LGUI(KC_UP)));
-            tap_shortcut(LCTL(LGUI(KC_RGHT)));
-            break;
-        case THIRD_VD:
-            tap_shortcut(LCTL(LGUI(KC_DOWN)));
-            tap_shortcut(LCTL(LGUI(KC_LEFT)));
-            break;
-        case FOURTH_VD:
-            tap_shortcut(LCTL(LGUI(KC_DOWN)));
-            tap_shortcut(LCTL(LGUI(KC_RGHT)));
+            tap_shortcut(mac_mode ? LCTL(LALT(KC_RGHT)) : LCTL(LGUI(KC_RGHT)));
             break;
         case FIRST_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LGUI(KC_1)) : LGUI(LALT(KC_1)));
+            if (mac_mode) { tap_shortcut(LCTL(LGUI(KC_1))); wait_ms(30); tap_shortcut(LCTL(LGUI(KC_1))); }
+            else { tap_shortcut(LGUI(LALT(KC_1))); }
             break;
         case SECOND_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LGUI(KC_2)) : LGUI(LALT(KC_2)));
+            if (mac_mode) { tap_shortcut(LCTL(LGUI(KC_2))); wait_ms(30); tap_shortcut(LCTL(LGUI(KC_2))); }
+            else { tap_shortcut(LGUI(LALT(KC_2))); }
             break;
         case THIRD_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LGUI(KC_3)) : LGUI(LALT(KC_3)));
+            if (mac_mode) { tap_shortcut(LCTL(LGUI(KC_3))); wait_ms(30); tap_shortcut(LCTL(LGUI(KC_3))); }
+            else { tap_shortcut(LGUI(LALT(KC_3))); }
             break;
         case FOURTH_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LGUI(KC_4)) : LGUI(LALT(KC_4)));
+            if (mac_mode) { tap_shortcut(LCTL(LGUI(KC_4))); wait_ms(30); tap_shortcut(LCTL(LGUI(KC_4))); }
+            else { tap_shortcut(LGUI(LALT(KC_4))); }
             break;
         case C_BACK:
-            tap_shortcut(mac_mode ? LGUI(KC_MINS) : LCTL(KC_MINS));
+            tap_shortcut(mac_mode ? LALT(KC_MINS) : LCTL(KC_MINS));
             break;
         case C_FORWARD:
-            tap_shortcut(mac_mode ? LGUI(KC_EQL) : LCTL(KC_EQL));
+            tap_shortcut(mac_mode ? LALT(KC_EQL) : LCTL(KC_EQL));
             break;
         case C_GODEF:
             tap_shortcut(KC_F12);
             break; 
         case C_GOIMP:
-            tap_shortcut(mac_mode ? LGUI(KC_F12) : LCTL(KC_F12));
+            tap_shortcut(mac_mode ? LALT(KC_F12) : LCTL(KC_F12));
             break;
         case C_GOREF:
             tap_shortcut(LSFT(KC_F12));
             break;
         case C_GODECL:
-            tap_shortcut(LCTL(LSFT(LALT(KC_F12))));
+            tap_shortcut(mac_mode ? LCTL(LSFT(LGUI(KC_F12))) : LCTL(LSFT(LALT(KC_F12))));
             break;
         case SH_F7:
             tap_shortcut(LSFT(KC_F7));
             break;
+        case C_PSCR:
+            tap_shortcut(mac_mode ? LALT(LCTL(LSFT(KC_4))) : KC_PSCR);
+            break;
         case OS_MODE_TOG:
             mac_mode = !mac_mode;
-            os_mode_led_toggle();
+            os_mode_led_toggle(mac_mode);
             break;
 
     }
