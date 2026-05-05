@@ -33,7 +33,9 @@ enum custom_keycodes {
     C_FORWARD,
     SH_F7,
     OS_MODE_TOG,
-    C_PSCR
+    C_PSCR,
+    C_HOME,
+    C_END
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -106,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // navigation
     [2] = LAYOUT_split_3x5_3(
   //,---------------------------------------------.                   ,-----------------------------------------------------.
-      XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       XXXXXXX, KC_HOME,   KC_UP,  KC_END, KC_PGUP,
+      XXXXXXX, WORD_BK,WORD_FWD, XXXXXXX, XXXXXXX,                       XXXXXXX, C_HOME,   KC_UP,  C_END, KC_PGUP,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_LGUI, KC_LCTL, KC_LALT, KC_LSFT, KC_MINUS,                     XXXXXXX, KC_LEFT, KC_DOWN,KC_RIGHT, KC_PGDN,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -318,6 +320,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case SH_F7:
             tap_shortcut(LSFT(KC_F7));
             break;
+        case C_HOME: {
+            if (mac_mode) {
+                uint8_t mods = get_mods();
+                clear_mods();
+                bool shift = mods & MOD_MASK_SHIFT;
+                tap_shortcut(shift ? LSFT(LGUI(KC_UP)) : LGUI(KC_UP));
+                set_mods(mods);
+            } else {
+                tap_code(KC_HOME);
+            }
+            break;
+        }
+        case C_END: {
+            if (mac_mode) {
+                uint8_t mods = get_mods();
+                clear_mods();
+                bool shift = mods & MOD_MASK_SHIFT;
+                tap_shortcut(shift ? LSFT(LGUI(KC_DOWN)) : LGUI(KC_DOWN));
+                set_mods(mods);
+            } else {
+                tap_code(KC_END);
+            }
+            break;
+        }
         case C_PSCR:
             tap_shortcut(mac_mode ? LALT(LCTL(LSFT(KC_4))) : KC_PSCR);
             break;
