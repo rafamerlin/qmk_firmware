@@ -323,10 +323,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case C_HOME: {
             if (mac_mode) {
                 uint8_t mods = get_mods();
-                clear_mods();
-                bool shift = mods & MOD_MASK_SHIFT;
-                tap_shortcut(shift ? LSFT(LALT(KC_UP)) : LALT(KC_UP));
-                set_mods(mods);
+                bool ctrl = mods & MOD_MASK_CTRL;
+                if (ctrl) {
+                    clear_mods();
+                    bool shift = mods & MOD_MASK_SHIFT;
+                    tap_shortcut(shift ? LSFT(LALT(KC_UP)) : LALT(KC_UP));
+                    set_mods(mods);
+                } else {
+                    tap_code(KC_HOME);
+                }
             } else {
                 tap_code(KC_HOME);
             }
@@ -335,10 +340,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case C_END: {
             if (mac_mode) {
                 uint8_t mods = get_mods();
-                clear_mods();
-                bool shift = mods & MOD_MASK_SHIFT;
-                tap_shortcut(shift ? LSFT(LALT(KC_DOWN)) : LALT(KC_DOWN));
-                set_mods(mods);
+                bool ctrl = mods & MOD_MASK_CTRL;
+                if (ctrl) {
+                    clear_mods();
+                    bool shift = mods & MOD_MASK_SHIFT;
+                    tap_shortcut(shift ? LSFT(LALT(KC_DOWN)) : LALT(KC_DOWN));
+                    set_mods(mods);
+                } else {
+                    tap_code(KC_END);
+                }
             } else {
                 tap_code(KC_END);
             }
