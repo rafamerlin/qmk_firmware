@@ -301,16 +301,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             tap_shortcut(LCTL(LGUI(KC_RGHT)));
             break;
         case FIRST_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LALT(KC_1)) : LGUI(LALT(KC_1)));
+            tap_shortcut(mac_mode ? LCTL(LGUI(KC_1)) : LGUI(LALT(KC_1)));
             break;
         case SECOND_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LALT(KC_2)) : LGUI(LALT(KC_2)));
+            tap_shortcut(mac_mode ? LCTL(LGUI(KC_2)) : LGUI(LALT(KC_2)));
             break;
         case THIRD_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LALT(KC_3)) : LGUI(LALT(KC_3)));
+            tap_shortcut(mac_mode ? LCTL(LGUI(KC_3)) : LGUI(LALT(KC_3)));
             break;
         case FOURTH_PROG_VD:
-            tap_shortcut(mac_mode ? LCTL(LALT(KC_4)) : LGUI(LALT(KC_4)));
+            tap_shortcut(mac_mode ? LCTL(LGUI(KC_4)) : LGUI(LALT(KC_4)));
             break;
         case C_BACK:
             tap_shortcut(mac_mode ? LGUI(KC_MINS) : LCTL(KC_MINS));
