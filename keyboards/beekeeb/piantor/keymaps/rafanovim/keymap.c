@@ -244,8 +244,9 @@ void layer_lock_set_user(layer_state_t locked_layers) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
 
-    // Mac: swap GUI(A) ↔ CTL(S) on arrows so A+arrow sends Ctrl and S+arrow sends Cmd
-    if (mac_mode && (keycode == KC_UP || keycode == KC_DOWN || keycode == KC_LEFT || keycode == KC_RIGHT)) {
+    // Mac: swap GUI(A) ↔ CTL(S) on arrows and delete/backspace
+    if (mac_mode && (keycode == KC_UP || keycode == KC_DOWN || keycode == KC_LEFT || keycode == KC_RIGHT
+                     || keycode == KC_BSPC || keycode == KC_DEL)) {
         uint8_t mods = get_mods();
         bool has_gui = mods & MOD_BIT(KC_LGUI);
         bool has_ctl = mods & MOD_BIT(KC_LCTL);
