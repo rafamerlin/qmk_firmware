@@ -243,7 +243,23 @@ void layer_lock_set_user(layer_state_t locked_layers) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
-    
+
+    // Mac: swap GUI(A) ↔ CTL(S) on arrows so A+arrow sends Ctrl and S+arrow sends Cmd
+    if (mac_mode && (keycode == KC_UP || keycode == KC_DOWN || keycode == KC_LEFT || keycode == KC_RIGHT)) {
+        uint8_t mods = get_mods();
+        bool has_gui = mods & MOD_BIT(KC_LGUI);
+        bool has_ctl = mods & MOD_BIT(KC_LCTL);
+        if (has_gui != has_ctl) {
+            if (has_gui) {
+                del_mods(MOD_BIT(KC_LGUI));
+                add_mods(MOD_BIT(KC_LCTL));
+            } else {
+                del_mods(MOD_BIT(KC_LCTL));
+                add_mods(MOD_BIT(KC_LGUI));
+            }
+        }
+    }
+
     bool custom_keypress = false;
     switch (keycode) {
         case WORD_FWD:
@@ -323,15 +339,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case C_HOME: {
             if (mac_mode) {
                 uint8_t mods = get_mods();
+                bool shift = mods & MOD_MASK_SHIFT;
                 bool ctrl = mods & MOD_MASK_CTRL;
+                clear_mods();
                 if (ctrl) {
-                    clear_mods();
-                    bool shift = mods & MOD_MASK_SHIFT;
                     tap_shortcut(shift ? LSFT(LALT(KC_UP)) : LALT(KC_UP));
-                    set_mods(mods);
                 } else {
-                    tap_code(KC_HOME);
+                    tap_shortcut(shift ? LSFT(LALT(KC_LEFT)) : LALT(KC_LEFT));
                 }
+                set_mods(mods);
             } else {
                 tap_code(KC_HOME);
             }
@@ -340,15 +356,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case C_END: {
             if (mac_mode) {
                 uint8_t mods = get_mods();
+                bool shift = mods & MOD_MASK_SHIFT;
                 bool ctrl = mods & MOD_MASK_CTRL;
+                clear_mods();
                 if (ctrl) {
-                    clear_mods();
-                    bool shift = mods & MOD_MASK_SHIFT;
                     tap_shortcut(shift ? LSFT(LALT(KC_DOWN)) : LALT(KC_DOWN));
-                    set_mods(mods);
                 } else {
-                    tap_code(KC_END);
+                    tap_shortcut(shift ? LSFT(LALT(KC_RIGHT)) : LALT(KC_RIGHT));
                 }
+                set_mods(mods);
             } else {
                 tap_code(KC_END);
             }
