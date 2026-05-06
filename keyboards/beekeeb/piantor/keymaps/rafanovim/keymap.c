@@ -245,18 +245,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
 
     // Mac: swap GUI(A) ↔ CTL(S) on arrows and delete/backspace
-    if (mac_mode && (keycode == KC_UP || keycode == KC_DOWN || keycode == KC_LEFT || keycode == KC_RIGHT
-                     || keycode == KC_BSPC || keycode == KC_DEL)) {
-        uint8_t mods = get_mods();
-        bool has_gui = mods & MOD_BIT(KC_LGUI);
-        bool has_ctl = mods & MOD_BIT(KC_LCTL);
-        if (has_gui != has_ctl) {
-            if (has_gui) {
-                del_mods(MOD_BIT(KC_LGUI));
-                add_mods(MOD_BIT(KC_LCTL));
-            } else {
-                del_mods(MOD_BIT(KC_LCTL));
-                add_mods(MOD_BIT(KC_LGUI));
+    if (mac_mode) {
+        uint16_t base_kc = keycode;
+        if (IS_QK_LAYER_TAP(keycode) || IS_QK_MOD_TAP(keycode)) {
+            base_kc = keycode & 0xFF;
+        }
+        if (base_kc == KC_UP || base_kc == KC_DOWN || base_kc == KC_LEFT || base_kc == KC_RIGHT
+                || base_kc == KC_BSPC || base_kc == KC_DEL) {
+            uint8_t mods = get_mods();
+            bool has_gui = mods & MOD_BIT(KC_LGUI);
+            bool has_ctl = mods & MOD_BIT(KC_LCTL);
+            if (has_gui != has_ctl) {
+                if (has_gui) {
+                    del_mods(MOD_BIT(KC_LGUI));
+                    add_mods(MOD_BIT(KC_LCTL));
+                } else {
+                    del_mods(MOD_BIT(KC_LCTL));
+                    add_mods(MOD_BIT(KC_LGUI));
+                }
             }
         }
     }
