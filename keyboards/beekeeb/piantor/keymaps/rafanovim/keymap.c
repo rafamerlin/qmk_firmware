@@ -35,7 +35,9 @@ enum custom_keycodes {
     OS_MODE_TOG,
     C_PSCR,
     C_HOME,
-    C_END
+    C_END,
+    C_VOLU,
+    C_VOLD
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -162,7 +164,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,--------------------------------------------.                    ,----------------------------------------------.
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+-|
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT, KC_MSEL,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_MPRV, C_VOLD, C_VOLU, KC_MNXT, KC_MSEL,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+-|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+-|
@@ -186,9 +188,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // extra
     [8] = LAYOUT_split_3x5_3(
   //,--------------------------------------------.                    ,---------------------------------------------.
-      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, KC_VOLU,
+      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, FIRST_PROG_VD, SECOND_PROG_VD, XXXXXXX, C_VOLU,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, KC_VOLD,
+     XXXXXXX, XXXXXXX, OS_MODE_TOG, XXXXXXX, XXXXXXX,                      XXXXXXX, THIRD_PROG_VD, FOURTH_PROG_VD, XXXXXXX, C_VOLD,
   //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
       QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, LEFT_VD, RIGHT_VD, XXXXXXX, KC_MPLY,
   //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
@@ -225,6 +227,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 static bool mac_mode = false;
 
+// All one-shot shortcut chords go through this instead of tap_code16().
+//
+// Why the delay: tap_code16() registers and unregisters the chord in
+// back-to-back HID reports, so the host sees a hold time of ~0 ms. macOS
+// processes keyboard events asynchronously, and its system-level shortcut
+// handlers (Mission Control / Spaces switching, screenshots, etc.) would
+// intermittently drop chords that were released before the OS got around to
+// looking at the modifier+key state. Holding the chord for
+// SHORTCUT_TAP_DELAY ms (10 ms) between register and unregister gives macOS
+// time to observe the modifiers and the key down together, making the
+// shortcuts fire reliably. Linux/Windows didn't need this, but the delay is
+// imperceptible, so it is applied unconditionally rather than branching on
+// mac_mode.
 static void tap_shortcut(uint16_t keycode) {
     tap_code16_delay(keycode, SHORTCUT_TAP_DELAY);
 }
@@ -271,6 +286,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case WORD_FWD:
         case WORD_BK:
+        case C_VOLU:
+        case C_VOLD:
             custom_keypress = true;
             break;
     }
@@ -297,6 +314,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 register_code16(word_fwd_chord);
             } else {
                 unregister_code16(word_fwd_chord);
+            }
+            break;
+        }
+        // Mac: Option+Shift+Volume changes volume in quarter-segment steps
+        // instead of full segments. After the System Settings swap, macOS sees
+        // LGUI as Option, so we send LGUI+LSFT around the consumer volume key.
+        // Register/unregister (not tap) so holding the key keeps repeating —
+        // with 4x smaller steps you need the repeat even more.
+        case C_VOLU: {
+            static uint16_t volu_chord;
+            if (record->event.pressed) {
+                volu_chord = mac_mode ? LSFT(LGUI(KC_VOLU)) : KC_VOLU;
+                register_code16(volu_chord);
+            } else {
+                unregister_code16(volu_chord);
+            }
+            break;
+        }
+        case C_VOLD: {
+            static uint16_t vold_chord;
+            if (record->event.pressed) {
+                vold_chord = mac_mode ? LSFT(LGUI(KC_VOLD)) : KC_VOLD;
+                register_code16(vold_chord);
+            } else {
+                unregister_code16(vold_chord);
             }
             break;
         }
