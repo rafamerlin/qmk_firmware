@@ -37,7 +37,8 @@ enum custom_keycodes {
     C_HOME,
     C_END,
     C_VOLU,
-    C_VOLD
+    C_VOLD,
+    C_PROMPTS
 };
 
 #ifdef TAPPING_TERM_PER_KEY
@@ -205,7 +206,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  C_BACK, XXXXXXX,C_FORWARD, XXXXXXX,
     //|--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+|
-        KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      C_PROMPTS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+|
                                      XXXXXXX,XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX,XXXXXXX
                                         //`--------------------------'  `--------------------------'
@@ -244,6 +245,142 @@ static void tap_shortcut(uint16_t keycode) {
     tap_code16_delay(keycode, SHORTCUT_TAP_DELAY);
 }
 
+// Mac: rewrite GUI <-> CTL for the navigation and deletion keys, so the
+// Linux/Windows muscle memory lands on the right macOS shortcut. After the
+// System Settings swap (LALT -> Cmd, LGUI -> Option):
+//
+//   Ctrl(S) + arrow/bspc/del -> Option+...  (word movement, delete word)  = send LGUI
+//   GUI(A)  + arrow/bspc/del -> Control+... (Spaces / Mission Control)    = send LCTL
+//
+// The swap stays applied for as long as a rewritten key is held, so the host
+// keeps auto-repeating (holding Ctrl+Left still walks back word by word).
+//
+// The hazard this has to avoid: an earlier version swapped real_mods on press
+// and swapped back on release with no bookkeeping, which leaked a modifier
+// whenever the home row mod was let go while the nav key was still down. QMK's
+// mod-tap release calls unregister_mods() for the mod it believes it holds;
+// that bit had already been cleared behind its back, so the call did nothing,
+// and the release-side swap then re-added a modifier nothing was holding. The
+// result was a stuck Cmd or Ctrl that only a replug cleared.
+//
+// The fix is nav_swap_src_up: any release of the modifier we suppressed is
+// noticed while the swap is live, and the restore then re-adds that modifier
+// only if it is genuinely still held. Restoring nothing costs the user nothing;
+// restoring a phantom is what wedged the board.
+//
+// Layer-tap and mod-tap keys only take part on their tap resolution — a hold
+// there is a layer or a modifier and must be left alone. That also means
+// LT(1, KC_BSPC) / LT(1, KC_DEL) holds no longer rewrite the modifiers for the
+// whole duration of the number-layer hold, which is how this used to fire on
+// the most common path of all.
+static uint8_t  nav_swap_removed   = 0;     // real_mods bit we suppressed
+static uint8_t  nav_swap_added     = 0;     // real_mods bit we injected
+static uint8_t  nav_swap_keys      = 0;     // rewritten nav keys currently held
+static bool     nav_swap_src_up    = false; // suppressed mod was released mid-swap
+static uint16_t mac_swap_swallowed = KC_NO; // tap we sent in full, release to eat
+
+// Bit position tracking a held nav key, or -1 if the keycode isn't one.
+static int8_t nav_swap_bit(uint16_t keycode) {
+    switch (keycode) {
+        case KC_UP:    return 0;
+        case KC_DOWN:  return 1;
+        case KC_LEFT:  return 2;
+        case KC_RIGHT: return 3;
+        case KC_BSPC:  return 4;
+        case KC_DEL:   return 5;
+        default:       return -1;
+    }
+}
+
+// The real_mods bits this key event adds or removes, or 0 if it isn't a modifier.
+static uint8_t nav_swap_event_mods(uint16_t keycode) {
+    if (IS_QK_MOD_TAP(keycode)) {
+        uint8_t mods = QK_MOD_TAP_GET_MODS(keycode);
+        // Bit 4 marks the right-hand variants, which live in the high nibble.
+        return (mods & 0x10) ? ((mods & 0x0F) << 4) : (mods & 0x0F);
+    }
+    if (IS_MODIFIER_KEYCODE(keycode)) {
+        return MOD_BIT(keycode);
+    }
+    return 0;
+}
+
+static void nav_swap_end(void) {
+    set_mods((get_mods() & ~nav_swap_added) | (nav_swap_src_up ? 0 : nav_swap_removed));
+    send_keyboard_report();
+    nav_swap_removed = 0;
+    nav_swap_added   = 0;
+    nav_swap_keys    = 0;
+    nav_swap_src_up  = false;
+}
+
+static bool mac_swap_nav(uint16_t keycode, keyrecord_t *record) {
+    // Watch for the suppressed modifier being let go. This runs before QMK's
+    // own handling of the event, which is what makes the restore safe.
+    if (nav_swap_keys && !record->event.pressed
+            && (nav_swap_event_mods(keycode) & nav_swap_removed)) {
+        nav_swap_src_up = true;
+    }
+
+    uint16_t base_kc = keycode;
+    bool     tap_only = false;
+    if (IS_QK_LAYER_TAP(keycode) || IS_QK_MOD_TAP(keycode)) {
+        if (!record->tap.count) { return false; }
+        base_kc  = keycode & 0xFF; // tap keycode, for both LT and MT
+        tap_only = true;
+    }
+    int8_t bit = nav_swap_bit(base_kc);
+    if (bit < 0) { return false; }
+
+    if (!record->event.pressed) {
+        // A tap we already sent start to finish; eat the release.
+        if (keycode == mac_swap_swallowed) {
+            mac_swap_swallowed = KC_NO;
+            return true;
+        }
+        if (nav_swap_keys & (1 << bit)) {
+            nav_swap_keys &= ~(1 << bit);
+            if (!nav_swap_keys) { nav_swap_end(); }
+        }
+        return false; // let QMK unregister the key itself
+    }
+
+    if (!mac_mode) { return false; }
+
+    if (nav_swap_keys) {
+        // Already swapped — get_mods() now shows the injected modifier, so
+        // re-deriving here would swap it straight back.
+        if (!tap_only) { nav_swap_keys |= (1 << bit); }
+        return false;
+    }
+
+    uint8_t mods    = get_mods();
+    bool    has_gui = mods & MOD_BIT(KC_LGUI);
+    bool    has_ctl = mods & MOD_BIT(KC_LCTL);
+    if (has_gui == has_ctl) { return false; }
+
+    uint8_t removed = has_gui ? MOD_BIT(KC_LGUI) : MOD_BIT(KC_LCTL);
+    uint8_t added   = has_gui ? MOD_BIT(KC_LCTL) : MOD_BIT(KC_LGUI);
+    set_mods((mods & ~removed) | added);
+    send_keyboard_report();
+
+    if (tap_only) {
+        // An LT/MT hold is a layer or a modifier, so the tap is the only shot
+        // at this key — send it complete and put the modifiers back now.
+        tap_code_delay((uint8_t)base_kc, SHORTCUT_TAP_DELAY);
+        set_mods(mods);
+        send_keyboard_report();
+        mac_swap_swallowed = keycode;
+        return true;
+    }
+
+    nav_swap_removed = removed;
+    nav_swap_added   = added;
+    nav_swap_keys    = (1 << bit);
+    nav_swap_src_up  = false;
+    return false; // let QMK register the key, and hold it for auto-repeat
+}
+
 void keyboard_post_init_user(void) {
     os_mode_led_init();
 }
@@ -260,27 +397,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) { return false; }
 
     // Mac: swap GUI(A) ↔ CTL(S) on arrows and delete/backspace
-    if (mac_mode) {
-        uint16_t base_kc = keycode;
-        if (IS_QK_LAYER_TAP(keycode) || IS_QK_MOD_TAP(keycode)) {
-            base_kc = keycode & 0xFF;
-        }
-        if (base_kc == KC_UP || base_kc == KC_DOWN || base_kc == KC_LEFT || base_kc == KC_RIGHT
-                || base_kc == KC_BSPC || base_kc == KC_DEL) {
-            uint8_t mods = get_mods();
-            bool has_gui = mods & MOD_BIT(KC_LGUI);
-            bool has_ctl = mods & MOD_BIT(KC_LCTL);
-            if (has_gui != has_ctl) {
-                if (has_gui) {
-                    del_mods(MOD_BIT(KC_LGUI));
-                    add_mods(MOD_BIT(KC_LCTL));
-                } else {
-                    del_mods(MOD_BIT(KC_LCTL));
-                    add_mods(MOD_BIT(KC_LGUI));
-                }
-            }
-        }
-    }
+    if (mac_swap_nav(keycode, record)) { return false; }
 
     bool custom_keypress = false;
     switch (keycode) {
@@ -385,6 +502,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case SH_F7:
             tap_shortcut(LSFT(KC_F7));
             break;
+        // Mac only: double-tap within TAPPING_TERM types the prompts path; a
+        // single tap only arms it. Firing disarms, so a triple tap doesn't
+        // type it twice.
+        case C_PROMPTS: {
+            static uint32_t prompts_timer;
+            static bool     prompts_armed = false;
+            if (!mac_mode) { break; }
+            if (prompts_armed && timer_elapsed32(prompts_timer) < TAPPING_TERM) {
+                SEND_STRING("@~/dev/prompts/");
+                prompts_armed = false;
+            } else {
+                prompts_timer = timer_read32();
+                prompts_armed = true;
+            }
+            break;
+        }
         case C_HOME: {
             if (mac_mode) {
                 uint8_t mods = get_mods();
