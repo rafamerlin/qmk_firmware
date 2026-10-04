@@ -502,17 +502,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case SH_F7:
             tap_shortcut(LSFT(KC_F7));
             break;
-        // Mac only: double-tap within TAPPING_TERM types the prompts path; a
-        // single tap only arms it. Firing disarms, so a triple tap doesn't
-        // type it twice.
+        // Mac only: a tap types the dev path right away; a second tap within
+        // TAPPING_TERM appends "prompts/" to it. Firing disarms, so a triple
+        // tap starts a fresh dev path instead of appending again.
         case C_PROMPTS: {
             static uint32_t prompts_timer;
             static bool     prompts_armed = false;
             if (!mac_mode) { break; }
             if (prompts_armed && timer_elapsed32(prompts_timer) < TAPPING_TERM) {
-                SEND_STRING("@~/dev/prompts/");
+                SEND_STRING("prompts/");
                 prompts_armed = false;
             } else {
+                SEND_STRING("@~/dev/");
                 prompts_timer = timer_read32();
                 prompts_armed = true;
             }

@@ -4,7 +4,7 @@ After we flashed we then can just:
 To test
 `qmk compile -kb beekeeb/piantor -km rafanovim`
 
-On macOS without the qmk CLI, build with Docker (Docker Desktop must be running), from the repo root:
+On macOS without the qmk CLI, build with Docker (Colima or Docker Desktop must be running), from the repo root:
 `SKIP_FLASHING_SUPPORT=1 util/docker_build.sh beekeeb/piantor:rafanovim`
 
 SKIP_FLASHING_SUPPORT is needed because the script otherwise demands docker-machine for USB passthrough on non-Linux hosts, which only matters for :flash targets.
